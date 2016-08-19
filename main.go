@@ -3,27 +3,35 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"os"
-	"time"
 )
 
 const maxIterations = 30000
 
 func main() {
 	if len(os.Args) > 1 {
-		fmt.Println(os.Args[1])
+		if _, err := os.Stat(os.Args[1]); os.IsNotExist(err) {
+			fmt.Println(err)
+			return
+		}
+		bfCode, err := ioutil.ReadFile(os.Args[1])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		interpret(bfCode)
+		return
 	}
-	fmt.Println()
-	interpret("++++++++[>++++++++<]>+.")
+	fmt.Println("Error: Must specify brainf*ck file!")
+	return
 }
 
-func interpret(bfCodeString string) {
-	bfCode := []rune(bfCodeString)
+func interpret(bfCode []byte) {
 	var cells [30000]byte
 	cellptr := 0
 	pstack := NewPtrStack()
 	var input []byte
-	//iter := 0
 	for i := 0; i < len(bfCode); i++ {
 		switch bfCode[i] {
 		case '<':
@@ -48,19 +56,12 @@ func interpret(bfCodeString string) {
 						openBrak--
 					}
 				}
-				//iter = 0
 				continue
 			}
 			pstack.Push(i)
-			//iter++
 		case ']':
-			/*if iter == maxIterations {
-				log.Panic("ERROR: TOO MANY ITERATIONS")
-			}*/
 			if !pstack.IsEmpty() {
 				i = pstack.Pop() - 1
-				fmt.Println(len(cells), ";", cellptr)
-				time.Sleep(1)
 			}
 		case '.':
 			fmt.Print(string(cells[cellptr]))
