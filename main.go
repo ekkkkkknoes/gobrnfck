@@ -30,7 +30,6 @@ func main() {
 func interpret(bfCode []byte) {
 	var cells [30000]byte
 	cellptr := 0
-	pstack := NewPtrStack()
 	var input []byte
 	for i := 0; i < len(bfCode); i++ {
 		switch bfCode[i] {
@@ -46,25 +45,32 @@ func interpret(bfCode []byte) {
 			cells[cellptr]--
 		case '[':
 			if cells[cellptr] == 0 {
-				openBrak := 0
-				i++
-				for ; !(openBrak == 0 && bfCode[i] == ']'); i++ {
+				openBracket := 1
+				for openBracket != 0 {
+					i++
 					if bfCode[i] == '[' {
-						openBrak++
+						openBracket++
 					}
 					if bfCode[i] == ']' {
-						openBrak--
+						openBracket--
 					}
 				}
-				continue
+				break
 			}
-			pstack.Push(i)
 		case ']':
-			if !pstack.IsEmpty() {
-				i = pstack.Pop() - 1
+			closeBracket := 1
+			i--
+			for ; closeBracket != 0; i-- {
+				if bfCode[i] == '[' {
+					closeBracket--
+				}
+				if bfCode[i] == ']' {
+					closeBracket++
+				}
 			}
+			break
 		case '.':
-			fmt.Print(string(cells[cellptr]))
+			fmt.Printf("%c", cells[cellptr])
 		case ',':
 			if len(input) == 0 {
 				scanner := bufio.NewScanner(os.Stdin)
@@ -77,4 +83,5 @@ func interpret(bfCode []byte) {
 			}
 		}
 	}
+	fmt.Println()
 }
