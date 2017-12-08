@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -20,68 +19,10 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		interpret(bfCode)
+		inter := NewInterpreter(32767,32767)
+		inter.RunCode(bfCode)
 		return
 	}
 	fmt.Println("Error: Must specify brainf*ck file!")
 	return
-}
-
-func interpret(bfCode []byte) {
-	var cells [30000]byte
-	cellptr := 0
-	var input []byte
-	for i := 0; i < len(bfCode); i++ {
-		switch bfCode[i] {
-		case '<':
-			cellptr--
-			cellptr %= len(cells)
-		case '>':
-			cellptr++
-			cellptr %= len(cells)
-		case '+':
-			cells[cellptr]++
-		case '-':
-			cells[cellptr]--
-		case '[':
-			if cells[cellptr] == 0 {
-				openBracket := 1
-				for openBracket != 0 {
-					i++
-					if bfCode[i] == '[' {
-						openBracket++
-					}
-					if bfCode[i] == ']' {
-						openBracket--
-					}
-				}
-				break
-			}
-		case ']':
-			closeBracket := 1
-			i--
-			for ; closeBracket != 0; i-- {
-				if bfCode[i] == '[' {
-					closeBracket--
-				}
-				if bfCode[i] == ']' {
-					closeBracket++
-				}
-			}
-			break
-		case '.':
-			fmt.Printf("%c", cells[cellptr])
-		case ',':
-			if len(input) == 0 {
-				scanner := bufio.NewScanner(os.Stdin)
-				scanner.Scan()
-				input = []byte(scanner.Text())
-			}
-			if len(input) != 0 {
-				cells[cellptr] = input[0]
-				input = input[1:]
-			}
-		}
-	}
-	fmt.Println()
 }
